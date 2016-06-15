@@ -1,14 +1,3 @@
-d3.select("#button").on("click", function(d) {
-	var div = d3.select(".chart");
-	var currClass = div.attr("class");
-
-	if(currClass !== "chart hidden") {
-		div.attr("class", "chart hidden");
-	} else {
-		div.attr("class", "chart");
-	}
-})
-
 var data = [
 	{
 	"value": 6.4,
@@ -50,8 +39,6 @@ var data = [
 
 var DonutChart = function (holderName, data, params) {
 	"use strict";
-
-	var w = d3.select(holderName)[0][0].getBoundingClientRect().width;
 
 	var width = d3.select(holderName)[0][0].getBoundingClientRect().width || 1000,
 	height = 2 / 3 * width,
@@ -269,9 +256,4 @@ var DonutChart = function (holderName, data, params) {
 	}
 }
 
-var chart = new DonutChart(".chart", data, {
-	width: 800,
-	height: 500,
-	radius: 180,
-	innerRadius: 95
-});
+var chart = new DonutChart(".chart", data);
