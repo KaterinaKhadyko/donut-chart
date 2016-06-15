@@ -1,0 +1,27 @@
+body {
+	font-family: Verdana;
+	color: #999;
+}
+
+.wrapper {
+	width: 80%;
+	margin: 0 auto;
+}
+
+text {
+	font-size: 18px;
+	font-family: Verdana;
+}
+
+.hidden {
+	display: none;
+}
+
+.chart {
+	width: 80%;
+	margin: 0 auto;
+}
+
+polyline {
+	stroke: #999;
+}
