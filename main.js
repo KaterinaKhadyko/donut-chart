@@ -20,20 +20,20 @@ var data = [
 	{
 	"value": 6.4,
 	"label": "Bankfinanzierung<br><b>6,4 Mio. €</b>",
-	"color": "#5DA9D3",
-	"highlight": "#7DC9F3"
+	"color": "#ee7972",
+	"highlight": "#ee9980"
 	},
 	{
 	"value": 1.1,
 	"label": "Geplantes\nCrowdfunding<br><b>bis zu 1,1 Mio. €</b>",
-	"color": "#99DBDE",
-	"highlight": "#A9FBFE"
+	"color": "#f886ac",
+	"highlight": "#f89ac6"
 	},
 	{
 	"value": 3,
 	"label": "Eigenkapital<br><b>3 Mio. €</b>",
-	"color": "#C3E693",
-	"highlight": "#E3F6A3"
+	"color": "#f8e28c",
+	"highlight": "#f8ed91"
 	}
 ];
 
@@ -81,7 +81,6 @@ var DonutChart = function (holderName, data, params) {
 			return d.data.color;
 		});
 		
-
 	paths.transition()
     	.ease("ease-in")
     	.duration(600)
