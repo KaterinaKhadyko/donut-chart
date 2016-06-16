@@ -1,17 +1,11 @@
 body {
 	font-family: Verdana;
 	color: #999;
+	margin: 0;
+	min-width: 600px;
 }
 
-.wrapper {
-	width: 80%;
-	margin: 0 auto;
-}
 
-text {
-	font-size: 18px;
-	font-family: Verdana;
-}
 
 .hidden {
 	display: none;
@@ -19,9 +13,14 @@ text {
 
 .chart {
 	width: 80%;
-	margin: 0 auto;
+	margin: 30px auto;
 }
 
 polyline {
 	stroke: #999;
+}
+@media(max-width: 900px) {
+	body {
+		font-size: 13px;
+	}
 }
