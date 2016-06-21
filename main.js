@@ -39,22 +39,23 @@ var data = [
 
 var DonutChart = function (holderName, data, params) {
 	"use strict";
-
 	var width = d3.select(holderName)[0][0].getBoundingClientRect().width || 1000,
-	height = 2 / 3 * width,
-	radius = 1 / 6 * width,
-	innerRadius = 2 / 3 * radius,
+	height = (params && (params.height * width)) || 2 / 3 * width,
+	radius = (params && (params.radius * width)) || 1 / 6 * width,
+	innerRadius = (params && (params.innerRadius * radius)) || 2 / 3 * radius,
 	labelPositions = [],
 	spacing = 5,
 	alpha = 5,	
 	labelX,
 	labelY;
+	console.log(radius);
 
 	var total = d3.sum(data, function (d) {
 		return d.value;
 	});
 
 	var svg = d3.select(holderName)
+		.style("position", "relative")
 		.append("svg")
 	    .data([data])
 		.attr("width", width)
@@ -81,8 +82,7 @@ var DonutChart = function (holderName, data, params) {
 		.attr("class", "section")
 		.attr("fill", function (d) {
 			return d.data.color;
-		});
-		
+		});		
 
 	paths.transition()
     	.ease("ease-in")
@@ -128,7 +128,7 @@ var DonutChart = function (holderName, data, params) {
 		})
 		.style("opacity", "0");
 
-		labels.transition()
+	labels.transition()
 		.delay(600)
 		.duration(300)
 		.style("opacity", "1");	
@@ -156,41 +156,40 @@ var DonutChart = function (holderName, data, params) {
 	var resizeTimer;
 
 	d3.select(window).on("resize", function (d) {
-		var scrollTop = window.pageYOffset;
-		var scrollleft = window.pageXOffset;
 		clearTimeout(resizeTimer);
 		var currWidth =  parseInt(d3.select(holderName).style("width"));
-		var currRadius = 1 / 6 * currWidth;
+		var currHeight = params.height * currWidth; 
+		var currRadius = params.radius * currWidth;
 
     	d3.select("svg")
     		.attr("width", function (d) {			
 				return currWidth;
 			})
     		.attr("height", function (d) {
-    			return 2 / 3 * currWidth;
+    			return currHeight;
     		})
 
 		arc.outerRadius(currRadius)
 			.innerRadius(function (d) {
-				return 2 / 3 * currRadius;
+				return params.innerRadius * currRadius;
 			});
-		arcs.attr("transform", "translate(" + currWidth / 2 + "," + 2 / 3 * currWidth / 2 + ")");
+		arcs.attr("transform", "translate(" + currWidth / 2 + "," + currHeight / 2 + ")");
 		
 		paths.attr("d", arc);
 
-		polyline.attr("points", function (d, i) {
+		polyline.attr("points", function (d, i) {			
 	        return getPolylinePoints(d, i, currRadius);
 		});
 
 		labels.style("top", function (d, i) {
-				var self = this;
+				var self = this;				
 
-				return  getLabelPositions(self, d, i).top + scrollTop + "px";
+				return  getLabelPositions(self, d, i).top + "px";
 			})
 			.style("left", function (d, i) {
 				var self = this;
 
-				return getLabelPositions(self, d, i).left + scrollleft + "px";
+				return getLabelPositions(self, d, i).left + "px";
 			})
 		
 		resizeTimer = setTimeout(pushTheLabels, 200);
@@ -216,13 +215,13 @@ var DonutChart = function (holderName, data, params) {
         	y2;
         if (Math.abs(midAngle) > Math.PI / 2) {
         	x2 = x - 10;
-        	x3 = x - 40;
+        	x3 = x - 50;
         	labelPositions[i] = {
         		"align": "right"
         	};
         } else {
         	x2 = x + 10;
-        	x3 = x + 40;
+        	x3 = x + 50;
         	labelPositions[i] = {
         		"align": "left"
         	};
@@ -240,38 +239,42 @@ var DonutChart = function (holderName, data, params) {
 	}
 
 	function getLinePosition () {
+		var holderRect = d3.select(holderName)[0][0].getBoundingClientRect();
 		polyline.each(function (d, i) {
-			labelPositions[i].rect = this.getBoundingClientRect();			
+			labelPositions[i].left = this.getBoundingClientRect().left - holderRect.left;
+			labelPositions[i].top = this.getBoundingClientRect().top - holderRect.top;
+			labelPositions[i].width = this.getBoundingClientRect().width;
+			labelPositions[i].height = this.getBoundingClientRect().height;
 		});
 	}
 
 	function getLabelPositions (elem, d, i) {
 		var result = {};
-		getLinePosition();
+		getLinePosition(labelPositions[i]);
 		if (labelPositions[i].align == "left") {			
-			result.left = Math.floor(labelPositions[i].rect.left) + labelPositions[i].rect.width + 5;
+			result.left = Math.floor(labelPositions[i].left) + labelPositions[i].width + 5;
 		} else {
-			result.left = Math.floor(labelPositions[i].rect.left) - elem.getBoundingClientRect().width - 5;
+			result.left = Math.floor(labelPositions[i].left) - elem.getBoundingClientRect().width - 5;
 		}
 
 		if (labelPositions[i].vertAlign == "top") {
-			result.top =  Math.floor(labelPositions[i].rect.top) - elem.getBoundingClientRect().height / 2;
+			result.top =  Math.floor(labelPositions[i].top) - elem.getBoundingClientRect().height / 2;
 		} else {
-			result.top =  Math.floor(labelPositions[i].rect.bottom) - elem.getBoundingClientRect().height / 2;
+			result.top =  Math.floor(labelPositions[i].top + labelPositions[i].height) - elem.getBoundingClientRect().height / 2;
 		}
 
 		return result;
 	}
 
 	function pushTheLabels () {
-		var scrollTop = window.pageYOffset;
 		var again = false;
+		var holderRect = d3.select(holderName)[0][0].getBoundingClientRect();
 
 		labels.each(function (d, i) {
 			var a = this;
 			var label_1 = d3.select(this);
-			var label_1BottomPoint = this.getBoundingClientRect().top + this.getBoundingClientRect().height;
-			var label_1TopPoint = this.getBoundingClientRect().top;
+			var label_1BottomPoint = this.getBoundingClientRect().top - holderRect.top+ this.getBoundingClientRect().height;
+			var label_1TopPoint = this.getBoundingClientRect().top - holderRect.top;
 
 			labels.each(function (d, i) {
 				var b = this;
@@ -285,8 +288,8 @@ var DonutChart = function (holderName, data, params) {
 					return;
 				}
 
-				var label_2TopPoint = this.getBoundingClientRect().top;
-				var label_2BottomPoint = this.getBoundingClientRect().top + this.getBoundingClientRect().height;
+				var label_2TopPoint = this.getBoundingClientRect().top - holderRect.top;
+				var label_2BottomPoint = this.getBoundingClientRect().top - holderRect.top + this.getBoundingClientRect().height;
 				
 				label_2TopPoint > label_1TopPoint && label_2TopPoint < label_1BottomPoint;
 
@@ -295,8 +298,8 @@ var DonutChart = function (holderName, data, params) {
 				} else if (label_2TopPoint > label_1TopPoint && label_2TopPoint < label_1BottomPoint) {
 					again = true;
 
-					label_1.style("top", label_1TopPoint - alpha + scrollTop + "px");
-					label_2.style("top", label_2TopPoint + alpha + scrollTop + "px");
+					label_1.style("top", label_1TopPoint - alpha + "px");
+					label_2.style("top", label_2TopPoint + alpha + "px");
 				}
 			});
 		});
@@ -307,7 +310,12 @@ var DonutChart = function (holderName, data, params) {
 	}
 
 	pushTheLabels();
-
 }
-
-var chart = new DonutChart(".chart", data);
+window.onload = function () {
+	var params = {
+		height: 0.4,
+		radius: 0.15,
+		innerRadius: 0.6
+	}
+	var chart = new DonutChart(".chart", data, params);
+};
